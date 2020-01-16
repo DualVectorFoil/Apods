@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.ParcelUuid;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.erjiguan.apods.BuildConfig;
@@ -24,11 +25,25 @@ public class BluetoothMonitor extends BroadcastReceiver {
     private static final String TAG = "BluetoothMonitor";
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
+    private static final long RECENT_BEACONS_MAX_T_NS = 10000000000L;
+
     private boolean mIsConnect = false;
+
+    private long mLastSeenConnected = 0;
+    private int mLeftStatus = 15;
+    private int mRightStatus = 15;
+    private int mCaseStatus = 15;
+    private boolean mLeftIsCharging = false;
+    private boolean mRightIsCharging = false;
+    private boolean mCaseIsCharging = false;
+    private int mPodsType;
+
+    private static final int AIRPODS_12 = 0;
+    private static final int AIRPODS_PRO = 1;
 
     private BluetoothLeScanner mBtScanner = null;
     private final UUIDHelper mUUIDHelper = new UUIDHelper();
-    private final List<String> mBeacons = new ArrayList<String>();
+    private final List<ScanResult> mBeacons = new ArrayList<ScanResult>();
 
     private static volatile BluetoothMonitor sInstance = null;
 
@@ -76,7 +91,7 @@ public class BluetoothMonitor extends BroadcastReceiver {
         if (bluetoothDevice != null && action != null && !action.isEmpty() && mUUIDHelper.verifyUUID(bluetoothDevice)) {
             if (action.equals(BluetoothDevice.ACTION_ACL_CONNECTED)) {
                 if (DEBUG) {
-                    Log.d(TAG, "Bluetooth acl connected.");
+                    Log.d(TAG, "Bluetooth acl connected, addr: " + bluetoothDevice.getAddress());
                 }
                 mIsConnect = true;
             } else if (action.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)) {
@@ -96,6 +111,7 @@ public class BluetoothMonitor extends BroadcastReceiver {
         }
 
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+
         mBtScanner = btAdapter.getBluetoothLeScanner();
         if (mBtScanner == null || !btAdapter.isEnabled()) {
             Log.d(TAG, "Uncorrected bluetooth status.");
@@ -107,15 +123,76 @@ public class BluetoothMonitor extends BroadcastReceiver {
         mBtScanner.startScan(filters, settings, new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
-                Log.d("haha123_res", result.toString());
+                Log.d(TAG, "onScanResult addr: " + result.getDevice().getAddress());
+                byte[] rawData = null;
+                if (result.getScanRecord() != null) {
+                    rawData = result.getScanRecord().getManufacturerSpecificData(76);
+                }
+                if (rawData == null || rawData.length != 27) {
+                    return;
+                }
+                mBeacons.add(result);
 
-                super.onScanResult(callbackType, result);
+                if (DEBUG) {
+                    Log.d(TAG, "Rssi: " + result.getRssi() + "db");
+                    Log.d(TAG, "This time hex data: " + decodeHex(rawData));
+                }
+
+                ScanResult strongestBeacon = null;
+                for (int i = 0; i < mBeacons.size(); i++) {
+                    if(SystemClock.elapsedRealtimeNanos() - mBeacons.get(i).getTimestampNanos() > RECENT_BEACONS_MAX_T_NS){
+                        mBeacons.remove(i--);
+                        continue;
+                    }
+                    if(strongestBeacon == null || strongestBeacon.getRssi() < mBeacons.get(i).getRssi()) {
+                        strongestBeacon = mBeacons.get(i);
+                    }
+                }
+                if (strongestBeacon != null && strongestBeacon.getDevice().getAddress().equals(result.getDevice().getAddress())) {
+                    strongestBeacon = result;
+                }
+
+                if (strongestBeacon == null || strongestBeacon.getRssi() < -60) {
+                    return;
+                }
+
+                String data = "";
+                if (strongestBeacon.getScanRecord() != null && strongestBeacon.getScanRecord().getManufacturerSpecificData(76) != null) {
+                    data = decodeHex(strongestBeacon.getScanRecord().getManufacturerSpecificData(76));
+                }
+                String leftStatusStr = ""; //left airpod (0-10 batt; 15=disconnected)
+                String rightStatusStr = ""; //right airpod (0-10 batt; 15=disconnected)
+                if (isFlipped(data)) {
+                    leftStatusStr = "" + data.charAt(12);
+                    rightStatusStr = "" + data.charAt(13);
+                } else {
+                    leftStatusStr = "" + data.charAt(13);
+                    rightStatusStr = "" + data.charAt(12);
+                }
+                String caseStatusStr = "" + data.charAt(15);
+                String chargeStatusStr = "" + data.charAt(14);
+
+                mLeftStatus = Integer.parseInt(leftStatusStr, 16);
+                mRightStatus = Integer.parseInt(rightStatusStr, 16);
+                mCaseStatus = Integer.parseInt(caseStatusStr, 16);
+                int chargeStatus = Integer.parseInt(chargeStatusStr, 16);
+                mLeftIsCharging = (chargeStatus & 0b00000001) != 0;
+                mRightIsCharging = (chargeStatus & 0b00000010) != 0;
+                mCaseIsCharging = (chargeStatus & 0b00000100) != 0;
+                mPodsType = (data.charAt(7) == 'E') ? AIRPODS_PRO : AIRPODS_12;
+                mLastSeenConnected = System.currentTimeMillis();
+                if (DEBUG) {
+                    Log.d(TAG, "mLeftStatus: " + mLeftStatus + ", mRightStatus: " + mRightStatus
+                            + ", mCaseStatus: " + mCaseStatus + ", mLeftIsCharging: " + mLeftIsCharging
+                            + ", mRightIsCharging: " + mRightIsCharging + ", mCaseIsCharging: " + mCaseIsCharging
+                            + ", mPodsType: " + mPodsType + ", mLastSeenConnected: " + mLastSeenConnected);
+                }
             }
 
             @Override
             public void onBatchScanResults(List<ScanResult> results) {
                 for (ScanResult res : results) {
-                    Log.d("haha123_batch_res", res.toString());
+                    onScanResult(-1, res);
                 }
 
                 super.onBatchScanResults(results);
@@ -170,6 +247,20 @@ public class BluetoothMonitor extends BroadcastReceiver {
         }
     }
 
+    private final char[] hexCharset = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+    private String decodeHex(byte[] bArr) {
+        if (bArr == null || bArr.length == 0) {
+            return "";
+        }
+        char[] ret = new char[bArr.length * 2];
+        for (int i = 0; i < bArr.length; i++) {
+            int b = bArr[i] & 0xFF;
+            ret[i*2] = hexCharset[b >>> 4];
+            ret[i*2+1] = hexCharset[b & 0x0F];
+        }
+        return new String(ret);
+    }
+
     private List<ScanFilter> getScanFilters() {
         byte[] manufacturerData = new byte[27];
         byte[] manufacturerDataMask = new byte[27];
@@ -183,5 +274,9 @@ public class BluetoothMonitor extends BroadcastReceiver {
         ScanFilter.Builder builder = new ScanFilter.Builder();
         builder.setManufacturerData(76, manufacturerData, manufacturerDataMask);
         return Collections.singletonList(builder.build());
+    }
+
+    private boolean isFlipped(String data) {
+        return (Integer.toString(Integer.parseInt("" + data.charAt(10),16) + 0x10, 2)).charAt(3) == '0';
     }
 }
