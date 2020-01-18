@@ -1,0 +1,12 @@
+<resources>
+    <attr name="pod_pic" format="reference" />
+    <attr name="pod_name" format="enum" />
+
+    <declare-styleable name="PodStatusView">
+        <attr name="pod_item">
+            <enum name="LEFT_POD" value="0" />
+            <enum name="RIGHT_POD" value="1" />
+            <enum name="CASE" value="2" />
+        </attr>
+    </declare-styleable>
+</resources>

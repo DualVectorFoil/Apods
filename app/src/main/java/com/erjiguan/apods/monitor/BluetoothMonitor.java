@@ -104,7 +104,6 @@ public class BluetoothMonitor extends BroadcastReceiver {
         }
     }
 
-    // TODO
     public void startScanBt() {
         if (DEBUG) {
             Log.d(TAG, "Start scan bluetooth.");
@@ -206,7 +205,6 @@ public class BluetoothMonitor extends BroadcastReceiver {
         });
     }
 
-    // TODO
     public void stopScanBt() {
         if (DEBUG) {
             Log.d(TAG, "Stop scan bluetooth.");

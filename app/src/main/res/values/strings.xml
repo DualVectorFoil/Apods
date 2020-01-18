@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Apods</string>
+
+    <string name="left_pod">L</string>
+    <string name="right_pod">R</string>
+    <string name="case_pod">case</string>
+
+    <string name="not_support_bt">设备不支持蓝牙</string>
+    <string name="bt_closed">蓝牙设备未打开</string>
 </resources>
