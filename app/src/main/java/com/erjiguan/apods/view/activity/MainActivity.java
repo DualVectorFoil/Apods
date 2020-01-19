@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -49,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
+        mPodStatusLayout = findViewById(R.id.pod_status);
+        mInteractionZoneLayout = findViewById(R.id.interaction_zone);
+
         BluetoothManager bluetoothManager = (BluetoothManager) this.getSystemService(BLUETOOTH_SERVICE);
         BluetoothAdapter adapter = bluetoothManager.getAdapter();
         if (adapter == null || !adapter.isEnabled()) {
@@ -61,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
     private void initDisconnectedView() {
         Toast.makeText(this, R.string.bt_closed, Toast.LENGTH_SHORT).show();
 
-        mPodStatusLayout = findViewById(R.id.pod_status);
         RelativeLayout.LayoutParams podStatusParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, ANIM_VIEW_HEIGHT);
 
         mGuideAnimView = new LottieAnimationView(this);
@@ -71,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
         mPodStatusLayout.addView(mGuideAnimView, podStatusParams);
         mGuideAnimView.playAnimation();
 
-        mInteractionZoneLayout = findViewById(R.id.interaction_zone);
         FrameLayout.LayoutParams interactiveParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, ANIM_VIEW_HEIGHT);
         interactiveParams.setMargins(0, 600, 0, 0);
 
@@ -87,12 +89,24 @@ public class MainActivity extends AppCompatActivity {
                 mConnectAnimView.setSpeed(1.5f);
             }
         });
+        mConnectAnimView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent i = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
+                startActivity(i);
+                return false;
+            }
+        });
 
         mInteractionZoneLayout.addView(mConnectAnimView, interactiveParams);
         mConnectAnimView.playAnimation();
     }
 
     private void initConnectedView() {
+        mPodStatusLayout.removeView(mGuideAnimView);
+        mPodStatusLayout.removeView(mConnectAnimView);
+
+        // TODO
 
     }
 

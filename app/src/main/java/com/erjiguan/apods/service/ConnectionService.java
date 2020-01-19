@@ -2,9 +2,7 @@ package com.erjiguan.apods.service;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -12,7 +10,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.erjiguan.apods.BuildConfig;
-import com.erjiguan.apods.monitor.BluetoothMonitor;
+import com.erjiguan.apods.model.monitor.BluetoothMonitor;
+import com.erjiguan.apods.receiver.BluetoothStatusReceiver;
 
 public class ConnectionService extends Service {
 
@@ -48,20 +47,12 @@ public class ConnectionService extends Service {
             startActivity(enableIntent);
         }
 
-        IntentFilter monitorIntentFilter = new IntentFilter();
-        monitorIntentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        monitorIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-        monitorIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        monitorIntentFilter.addCategory("android.bluetooth.headset.intent.category.companyid.76");
         if (mBtMonitor != null) {
-            unregisterReceiver(mBtMonitor);
+            BluetoothStatusReceiver.getInstance().unregisterCallback(mBtMonitor);
+            mBtMonitor.stopScanBt();
         }
         mBtMonitor = BluetoothMonitor.getInstance();
-        registerReceiver(mBtMonitor, monitorIntentFilter);
-
-        IntentFilter screenIntentFilter = new IntentFilter();
-        screenIntentFilter.addAction(Intent.ACTION_SCREEN_ON);
-        screenIntentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        BluetoothStatusReceiver.getInstance().registerCallback(mBtMonitor);
 
         if (mBtAdapter.isEnabled()) {
             mBtMonitor.startScanBt();
@@ -72,7 +63,8 @@ public class ConnectionService extends Service {
     public void onDestroy() {
         super.onDestroy();
         if (mBtMonitor != null) {
-            unregisterReceiver(mBtMonitor);
+            BluetoothStatusReceiver.getInstance().unregisterCallback(mBtMonitor);
+            mBtMonitor.stopScanBt();
         }
     }
 }
