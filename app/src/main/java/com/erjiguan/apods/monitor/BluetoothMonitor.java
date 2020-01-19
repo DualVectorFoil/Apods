@@ -38,8 +38,8 @@ public class BluetoothMonitor extends BroadcastReceiver {
     private boolean mCaseIsCharging = false;
     private int mPodsType;
 
-    private static final int AIRPODS_12 = 0;
-    private static final int AIRPODS_PRO = 1;
+    public static final int AIRPODS_12 = 0;
+    public static final int AIRPODS_PRO = 1;
 
     private BluetoothLeScanner mBtScanner = null;
     private final UUIDHelper mUUIDHelper = new UUIDHelper();
@@ -64,6 +64,70 @@ public class BluetoothMonitor extends BroadcastReceiver {
 
     public void setConnectState(boolean state) {
         mIsConnect = state;
+    }
+
+    public long getmLastSeenConnected() {
+        return mLastSeenConnected;
+    }
+
+    public void setmLastSeenConnected(long mLastSeenConnected) {
+        this.mLastSeenConnected = mLastSeenConnected;
+    }
+
+    public int getmLeftStatus() {
+        return mLeftStatus;
+    }
+
+    public void setmLeftStatus(int mLeftStatus) {
+        this.mLeftStatus = mLeftStatus;
+    }
+
+    public int getmRightStatus() {
+        return mRightStatus;
+    }
+
+    public void setmRightStatus(int mRightStatus) {
+        this.mRightStatus = mRightStatus;
+    }
+
+    public int getmCaseStatus() {
+        return mCaseStatus;
+    }
+
+    public void setmCaseStatus(int mCaseStatus) {
+        this.mCaseStatus = mCaseStatus;
+    }
+
+    public boolean ismLeftIsCharging() {
+        return mLeftIsCharging;
+    }
+
+    public void setmLeftIsCharging(boolean mLeftIsCharging) {
+        this.mLeftIsCharging = mLeftIsCharging;
+    }
+
+    public boolean ismRightIsCharging() {
+        return mRightIsCharging;
+    }
+
+    public void setmRightIsCharging(boolean mRightIsCharging) {
+        this.mRightIsCharging = mRightIsCharging;
+    }
+
+    public boolean ismCaseIsCharging() {
+        return mCaseIsCharging;
+    }
+
+    public void setmCaseIsCharging(boolean mCaseIsCharging) {
+        this.mCaseIsCharging = mCaseIsCharging;
+    }
+
+    public int getmPodsType() {
+        return mPodsType;
+    }
+
+    public void setmPodsType(int mPodsType) {
+        this.mPodsType = mPodsType;
     }
 
     @Override
