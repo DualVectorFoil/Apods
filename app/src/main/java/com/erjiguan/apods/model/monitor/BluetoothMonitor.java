@@ -12,7 +12,7 @@ import android.util.Log;
 
 import com.erjiguan.apods.BuildConfig;
 import com.erjiguan.apods.receiver.BluetoothStatusReceiver;
-import com.erjiguan.apods.util.UUIDHelper;
+import com.erjiguan.apods.utils.UUIDUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +40,7 @@ public class BluetoothMonitor implements BluetoothStatusReceiver.BluetoothStatus
     public static final int AIRPODS_PRO = 1;
 
     private BluetoothLeScanner mBtScanner = null;
-    private UUIDHelper mUUIDHelper = null;
+    private UUIDUtil mUUIDHelper = null;
     private List<ScanResult> mBeacons = null;
 
     private static volatile BluetoothMonitor sInstance = null;
@@ -49,7 +49,7 @@ public class BluetoothMonitor implements BluetoothStatusReceiver.BluetoothStatus
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
         // mBtScanner should not be null, because if mBtScanner is null, app should be closed in launching.
         mBtScanner = btAdapter.getBluetoothLeScanner();
-        mUUIDHelper = new UUIDHelper();
+        mUUIDHelper = new UUIDUtil();
         mBeacons = new ArrayList<ScanResult>();
     }
 

@@ -1,12 +1,10 @@
 package com.erjiguan.apods.base;
 
+import android.app.Dialog;
+
 public interface IBaseView {
 
-    void showNormal();
+    Dialog getLoadDialog();
 
-    void showError();
-
-    void showLoading();
-
-    void showErrorMsg(String errorMsg);
+    void cancelDialog();
 }

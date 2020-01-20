@@ -2,12 +2,11 @@ package com.erjiguan.apods.base;
 
 import android.os.Bundle;
 
-public interface IBaseActivity {
+public interface IFragment {
 
     int getLayout();
 
-    // Should init tool bar here.
-    int initView();
+    void initView();
 
     void initData(Bundle savedInstanceState);
 }

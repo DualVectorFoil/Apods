@@ -1,58 +1,52 @@
 package com.erjiguan.apods.base;
 
+import android.app.Dialog;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
-import javax.inject.Inject;
+import com.erjiguan.apods.utils.DialogUtil;
+import com.squareup.leakcanary.RefWatcher;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
-import dagger.android.AndroidInjection;
-import dagger.android.AndroidInjector;
-import dagger.android.DispatchingAndroidInjector;
-import dagger.android.HasFragmentInjector;
-import dagger.android.support.HasSupportFragmentInjector;
+import butterknife.ButterKnife;
 
-public abstract class BaseActivity<T extends IBasePresenter> extends IBaseActivity implements IBaseView, HasFragmentInjector, HasSupportFragmentInjector {
+public abstract class BaseActivity<V extends IBaseView, P extends BasePresenter<V>> extends RxAppCompatActivity implements IBaseView, IBaseActivity {
 
-    @Inject
-    protected T mPresenter;
+    protected P mPresenter;
 
-    @Inject
-    DispatchingAndroidInjector<Fragment> supportFragmentInjector;
+    protected Dialog mDialog;
 
-    @Inject
-    DispatchingAndroidInjector<android.app.Fragment> frameworkFragmentInjector;
+    @SuppressWarnings("unchecked")
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
+        setContentView(getLayout());
+        ButterKnife.bind(this);
+        if (mPresenter == null) {
+            mPresenter = createPresenter();
+        }
+        mPresenter.attachView((V) this);
+        initToolBar();
+        mDialog = DialogUtil.createLoadingDialog(this, "请稍后");
+        initView();
+        initData(savedInstanceState);
     }
 
-    @Override
-    public AndroidInjector<Fragment> supportFragmentInjector() {
-        return supportFragmentInjector;
-    }
+    protected abstract P createPresenter();
 
     @Override
-    public AndroidInjector<android.app.Fragment> fragmentInjector() {
-        return frameworkFragmentInjector;
+    protected void onDestroy() {
+        super.onDestroy();
+        RefWatcher refWatcher = BaseApplication.getRefWatcher(this);
+        refWatcher.watch(this);
+        if (mPresenter != null) {
+            mPresenter.detachView();
+        }
     }
 
-    @Override
-    public void showNormal() {
-    }
-
-    @Override
-    public void showError() {
-    }
-
-    @Override
-    public void showLoading() {
-    }
-
-    @Override
-    public void showErrorMsg(String errorMsg) {
+    protected void initToolBar() {
+        // TODO init tool bar
     }
 }
