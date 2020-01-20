@@ -2,6 +2,7 @@ package com.erjiguan.apods.base;
 
 public class RxBasePresenter<T extends IBaseView> implements IBasePresenter<T> {
 
+    // TODO 手动注入WeakReference
     protected T mView;
 
     private Object mModel;

@@ -5,11 +5,14 @@ import android.util.Log;
 import com.erjiguan.apods.base.RxBasePresenter;
 import com.erjiguan.apods.contract.IMainContract;
 
+import javax.inject.Inject;
+
 public class MainPresenter extends RxBasePresenter<IMainContract.IMainView> implements IMainContract.IMainActivityPresenter {
 
     // TODO ???
     private Object mModel;
 
+    @Inject
     public MainPresenter(Object model) {
         super(model);
         this.mModel = model;

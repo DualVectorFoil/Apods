@@ -20,11 +20,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements IMainCo
     }
 
     @Override
-    protected MainPresenter createPresenter() {
-        return new MainPresenter(new Object());
-    }
-
-    @Override
     protected void initEventAndData() {
         mPresenter.getData();
     }
