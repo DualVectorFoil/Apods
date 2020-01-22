@@ -2,20 +2,22 @@ package com.erjiguan.apods.ui.activity;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.erjiguan.apods.R;
 import com.erjiguan.apods.base.BaseActivity;
+import com.erjiguan.apods.mvp.model.bean.BluetoothStatusBean;
 import com.erjiguan.apods.mvp.presenter.MainPresenter;
 import com.erjiguan.apods.mvp.view.IMainView;
 
 import butterknife.BindView;
 
-public class MainActivity extends BaseActivity<IMainView, MainPresenter> implements IMainView {
+public class MainActivity extends BaseActivity<IMainView, MainPresenter> implements IMainView, View.OnClickListener {
 
-    private static final String TAG = "MainActivity";
+    public static final String TAG = "MainActivity";
 
     @BindView(R.id.pod_status)
     private RelativeLayout mPodStatusLayout;
@@ -53,5 +55,15 @@ public class MainActivity extends BaseActivity<IMainView, MainPresenter> impleme
     @Override
     public void initData(Bundle savedInstanceState) {
 
+    }
+
+    @Override
+    public void onBtStatusUpdated(BluetoothStatusBean statusBean) {
+        // TODO 更新view，最好是有一个根据变化字段更新只对应view的能力
+    }
+
+    @Override
+    public void onClick(View v) {
+        mPresenter.handleBtOpen();
     }
 }

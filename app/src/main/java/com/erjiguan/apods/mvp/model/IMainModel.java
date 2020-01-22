@@ -5,5 +5,5 @@ import com.erjiguan.apods.mvp.model.bean.BluetoothStatusBean;
 
 public interface IMainModel {
 
-    void handleBtOpen(OnLoadDataListener<BluetoothStatusBean> listener);
+    void registerBtStatusListner(OnLoadDataListener<BluetoothStatusBean> listener);
 }
