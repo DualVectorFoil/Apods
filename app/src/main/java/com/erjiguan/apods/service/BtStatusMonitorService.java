@@ -13,9 +13,9 @@ import com.erjiguan.apods.BuildConfig;
 import com.erjiguan.apods.model.monitor.BluetoothMonitor;
 import com.erjiguan.apods.receiver.BluetoothStatusReceiver;
 
-public class ConnectionService extends Service {
+public class BtStatusMonitorService extends Service {
 
-    private static final String TAG = "ConnectionService";
+    private static final String TAG = "BtStatusMonitorService";
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
     BluetoothAdapter mBtAdapter = null;
@@ -31,8 +31,9 @@ public class ConnectionService extends Service {
     public void onCreate() {
         super.onCreate();
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBtAdapter == null) {
+        if (mBtAdapter == null || !mBtAdapter.isEnabled()) {
             Toast.makeText(getApplicationContext(), "当前设备不支持蓝牙", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Do not support bluetooth.");
             stopSelf();
             return;
         }
@@ -40,22 +41,17 @@ public class ConnectionService extends Service {
             Log.d(TAG, "Support bluetooth.");
         }
 
-        if (!mBtAdapter.isEnabled()) {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            enableIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            Toast.makeText(getApplicationContext(), "请求打开蓝牙", Toast.LENGTH_SHORT).show();
-            startActivity(enableIntent);
-        }
-
         if (mBtMonitor != null) {
             BluetoothStatusReceiver.getInstance().unregisterCallback(mBtMonitor);
             mBtMonitor.stopScanBt();
         }
         mBtMonitor = BluetoothMonitor.getInstance();
-        BluetoothStatusReceiver.getInstance().registerCallback(mBtMonitor);
 
         if (mBtAdapter.isEnabled()) {
             mBtMonitor.startScanBt();
+        } else {
+            Log.e(TAG, "Bluetooth has been closed.");
+            stopSelf();
         }
     }
 

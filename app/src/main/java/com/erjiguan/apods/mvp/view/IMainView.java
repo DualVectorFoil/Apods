@@ -6,4 +6,14 @@ import com.erjiguan.apods.mvp.model.bean.BluetoothStatusBean;
 public interface IMainView extends IBaseView {
 
     void onBtStatusUpdated(BluetoothStatusBean statusBean);
+
+    void showViewWhenBtConnected();
+
+    void showViewWhenBtNotConnected();
+
+    void playBtSearchAnimation();
+
+    void stopBtSearchAnimation();
+
+    void finishSelf();
 }

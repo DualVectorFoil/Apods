@@ -7,7 +7,7 @@ public interface IBaseActivity {
     int getLayout();
 
     // Should init tool bar here.
-    int initView();
+    void initView();
 
     void initData(Bundle savedInstanceState);
 }

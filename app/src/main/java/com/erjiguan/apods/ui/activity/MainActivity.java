@@ -1,10 +1,15 @@
 package com.erjiguan.apods.ui.activity;
 
 import android.app.Dialog;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+
+import androidx.annotation.Nullable;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.erjiguan.apods.R;
@@ -15,17 +20,29 @@ import com.erjiguan.apods.mvp.view.IMainView;
 
 import butterknife.BindView;
 
-public class MainActivity extends BaseActivity<IMainView, MainPresenter> implements IMainView, View.OnClickListener {
+public class MainActivity extends BaseActivity<IMainView, MainPresenter> implements IMainView, View.OnClickListener, View.OnLongClickListener {
 
     public static final String TAG = "MainActivity";
 
     @BindView(R.id.pod_status)
-    private RelativeLayout mPodStatusLayout;
+    protected RelativeLayout mPodStatusLayout;
     @BindView(R.id.interaction_zone)
-    private FrameLayout mInteractionZoneLayout;
+    protected FrameLayout mInteractionZoneLayout;
 
     private LottieAnimationView mGuideAnimView;
     private LottieAnimationView mConnectAnimView;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mPresenter.init();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mPresenter.handleDestroy();
+    }
 
     @Override
     protected MainPresenter createPresenter() {
@@ -47,9 +64,21 @@ public class MainActivity extends BaseActivity<IMainView, MainPresenter> impleme
     }
 
     @Override
-    public int initView() {
-        // TODO 初始化一些view，调用presenter来初始化，必要时用回调，因为涉及到状态数据的获取
-        return 0;
+    public void initView() {
+        mGuideAnimView = new LottieAnimationView(this);
+        mGuideAnimView.setRepeatCount(-1);
+        mGuideAnimView.setAnimation("bluetooth_direct.json");
+        mGuideAnimView.setBackgroundColor(Color.WHITE);
+
+        mConnectAnimView = new LottieAnimationView(this);
+        mConnectAnimView.setRepeatCount(-1);
+        mConnectAnimView.setAnimation("bluetooth_connecting.json");
+        mConnectAnimView.setBackgroundColor(Color.WHITE);
+        mConnectAnimView.setSpeed(0f);
+        mConnectAnimView.setOnClickListener(this);
+        mConnectAnimView.setOnLongClickListener(this);
+
+        return;
     }
 
     @Override
@@ -65,5 +94,39 @@ public class MainActivity extends BaseActivity<IMainView, MainPresenter> impleme
     @Override
     public void onClick(View v) {
         mPresenter.handleBtOpen();
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        Intent i = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
+        startActivity(i);
+        return true;
+    }
+
+    @Override
+    public void showViewWhenBtConnected() {
+
+    }
+
+    @Override
+    public void showViewWhenBtNotConnected() {
+
+    }
+
+    @Override
+    public void playBtSearchAnimation() {
+        mConnectAnimView.setSpeed(1.5f);
+        mConnectAnimView.playAnimation();
+    }
+
+    @Override
+    public void stopBtSearchAnimation() {
+        mConnectAnimView.setSpeed(0f);
+        mConnectAnimView.cancelAnimation();
+    }
+
+    @Override
+    public void finishSelf() {
+        finish();
     }
 }

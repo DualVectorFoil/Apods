@@ -32,7 +32,7 @@
             android:name=".view.activity.MainActivity"
             android:exported="false"/>
 
-        <service android:name=".service.ConnectionService"
+        <service android:name=".service.BtStatusMonitorService"
             android:exported="true"
             android:enabled="true" />
 

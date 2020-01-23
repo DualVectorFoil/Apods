@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.erjiguan.apods.R;
-import com.erjiguan.apods.service.ConnectionService;
+import com.erjiguan.apods.service.BtStatusMonitorService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startConnectionService() {
         Intent intent = new Intent();
-        intent.setClass(getApplicationContext(), ConnectionService.class);
+        intent.setClass(getApplicationContext(), BtStatusMonitorService.class);
         startService(intent);
     }
 }
